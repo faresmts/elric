@@ -9,7 +9,7 @@ class LexicalAnalyzer:
     UNKNOWN = 99
     
     INT_LIT = 10
-    IDENT = 11
+    IDENTIFIER = 11
     ASSIGN_OP = 20
     ADD_OP = 21
     SUB_OP = 22
@@ -83,7 +83,6 @@ class LexicalAnalyzer:
             
         pprint(self.tokens)
     
-            
         self.close_file()
         
         
@@ -96,21 +95,39 @@ class LexicalAnalyzer:
             
             lexemeString = ''.join(self.lexeme)
             
-            if self.nextChar.isspace():
-                if lexemeString in self.RESERVED_WORDS_AND_TOKENS:
+            if self.nextCharClass == LexicalAnalyzer.DIGIT:
+                self.gelAllIdentifierFromMixedString()
+                return
+            
+            if lexemeString in self.RESERVED_WORDS_AND_TOKENS:
+                if self.nextCharClass != 'EOF':
+                    if self.nextChar.isspace():
+                        self.parseTokenFromReservedWord(lexemeString)
+                        return
+                else:
                     self.parseTokenFromReservedWord(lexemeString)
+                    self.currentToken = 'EOF'
+                    return
             
+            if self.nextCharClass != 'EOF':
+               if self.nextChar.isspace():
+                   self.parseIdentifier(lexemeString)
+                   return
+            else:
+                self.parseIdentifier(lexemeString)
+                self.currentToken = 'EOF'
+                return
             
-            #validar se a string do lexema não é uma palavra reservada
-            #se for e o próximo caractere for vazio, chamar o lookup 
             # vai adicionar digitos até proximo não ser um dígito ou não ser uma letra
         elif self.currentCharClass == LexicalAnalyzer.DIGIT:
-            print(f"Digito: {self.currentChar}")
+            return
             # self.lexeme.append(self.currentChar)
             # vai adicionar digitos até proximo não ser um digito
         elif self.currentCharClass == LexicalAnalyzer.UNKNOWN:
-            print(f"Desconhecido: {self.currentChar}")
+            return
             # self.lookup()
+        elif self.currentCharClass == LexicalAnalyzer.BLANK_SPACE:
+            return
         else:
             raise ValueError("Some error occured")
 
@@ -138,7 +155,7 @@ class LexicalAnalyzer:
 
         if not next_char:
             self.nextChar = None
-            self.nextCharClass = None
+            self.nextCharClass = 'EOF'
         else:
             self.nextChar = next_char
 
@@ -154,8 +171,25 @@ class LexicalAnalyzer:
         self.file.seek(position)
     
     def parseTokenFromReservedWord(self, lexemeString):
-        self.tokens[lexemeString] = LexicalAnalyzer.RESERVED_WORDS_AND_TOKENS[lexemeString]
+        self.tokens[len(self.tokens)] = {lexemeString : LexicalAnalyzer.RESERVED_WORDS_AND_TOKENS[lexemeString]}
+        self.lexeme = []
         
+    def parseIdentifier(self, lexemeString):
+        self.tokens[len(self.tokens)] = {lexemeString : LexicalAnalyzer.IDENTIFIER}
+        self.lexeme = []
+    
+    def gelAllIdentifierFromMixedString(self):
+        while self.nextCharClass != 'EOF' and self.nextChar != ' ':
+            self.validateChar()
+            self.validateNextChar()
+            self.lexeme.append(self.currentChar)
+        
+        if self.nextCharClass == 'EOF':
+            self.currentToken = 'EOF'
+            
+        lexemeString = ''.join(self.lexeme)
+        self.parseIdentifier(lexemeString)
+                    
 
     def lookup(self):
         return
