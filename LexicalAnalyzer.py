@@ -8,31 +8,32 @@ class LexicalAnalyzer:
     BLANK_SPACE = 2
     UNKNOWN = 99
     
-    INT_LIT = 10
+    NUMERIC = 10
     IDENTIFIER = 11
-    ASSIGN_OP = 20
-    ADD_OP = 21
-    SUB_OP = 22
-    MULT_OP = 23
-    DIV_OP = 24
-    LEFT_PAREN = 25
-    RIGHT_PAREN = 26
-    LEFT_KEY = 27
-    RIGHT_KEY = 28
-    PONTO_VIRGULA = 29
-    DOIS_PONTOS = 30
-    SETA_ESQUERDA = 31
-    SETA_DIREITA = 42
-    TIPO_INTEIRO = 32
-    TIPO_BOOLEAN = 33
-    COND_IF = 34
-    COND_ELSE = 35
-    LOOP_WHILE = 36
-    LOOP_FOR = 37
-    PR_STD = 38
-    PR_COUT = 39
-    PR_ENDL = 40
-    AND_OP = 41
+    
+    # ASSIGN_OP = 20
+    # ADD_OP = 21
+    # SUB_OP = 22
+    # MULT_OP = 23
+    # DIV_OP = 24
+    # LEFT_PAREN = 25
+    # RIGHT_PAREN = 26
+    # LEFT_KEY = 27
+    # RIGHT_KEY = 28
+    # PONTO_VIRGULA = 29
+    # DOIS_PONTOS = 30
+    # SETA_ESQUERDA = 31
+    # SETA_DIREITA = 42
+    # TIPO_INTEIRO = 32
+    # TIPO_BOOLEAN = 33
+    # COND_IF = 34
+    # COND_ELSE = 35
+    # LOOP_WHILE = 36
+    # LOOP_FOR = 37
+    # PR_STD = 38
+    # PR_COUT = 39
+    # PR_ENDL = 40
+    # AND_OP = 41
     
     DOUBLE_AND = 70
     DOUBLE_OR = 71
@@ -73,7 +74,7 @@ class LexicalAnalyzer:
         self.currentToken = None
         self.lexeme = []
         self.tokens = {}
-        
+        self.currentLine = 1
 
     def parse(self):
         self.open_file()
@@ -118,11 +119,23 @@ class LexicalAnalyzer:
                 self.currentToken = 'EOF'
                 return
             
-            # vai adicionar digitos até proximo não ser um dígito ou não ser uma letra
         elif self.currentCharClass == LexicalAnalyzer.DIGIT:
-            return
-            # self.lexeme.append(self.currentChar)
-            # vai adicionar digitos até proximo não ser um digito
+            self.lexeme.append(self.currentChar)
+            
+            lexemeString = ''.join(self.lexeme)
+            
+            if self.nextCharClass == LexicalAnalyzer.LETTER:
+                raise ValueError("Invalid identifier write: digits before alpha chars")
+            
+            if self.nextCharClass != 'EOF':
+                if self.nextChar.isspace():
+                    self.parseInteger(lexemeString)
+                    return
+            else:
+                self.parseInteger(lexemeString)
+                self.currentToken = 'EOF'
+                return
+            
         elif self.currentCharClass == LexicalAnalyzer.UNKNOWN:
             return
             # self.lookup()
@@ -139,6 +152,9 @@ class LexicalAnalyzer:
             self.currentToken = 'EOF'
         else:
             self.currentChar = char
+            
+            if char == '\n':
+                self.currentLine += 1
             
             if char.isalpha():
                 self.currentCharClass = LexicalAnalyzer.LETTER
@@ -189,6 +205,10 @@ class LexicalAnalyzer:
             
         lexemeString = ''.join(self.lexeme)
         self.parseIdentifier(lexemeString)
+    
+    def parseInteger(self, lexemeString):
+        self.tokens[len(self.tokens)] = {lexemeString : LexicalAnalyzer.NUMERIC}
+        self.lexeme = []
                     
 
     def lookup(self):
