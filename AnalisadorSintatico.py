@@ -5,6 +5,7 @@ class Analisador_Sintatico:
     self.analisadorLexico = Analisador_Lexico()
     self.tokens = (self.analisadorLexico.pegaTokens())
     self.posicaoAtual = 0
+    print(self.tokens)
   
   def analise(self):
     if self.verificaGramatica():
@@ -13,6 +14,7 @@ class Analisador_Sintatico:
       print("ERRROOOOOOO")
 
   def verificaGramatica(self):
+    print("Entrou em <expr>")
     if not self.verificaToken(11):
       return False
       
@@ -25,7 +27,8 @@ class Analisador_Sintatico:
 
     if not self.verificaToken(11):
       return False
-      
+    
+    print("Saiu de <expr>")
     return True
 
   def verificaToken(self, tipoEsperado):
@@ -80,7 +83,7 @@ class Analisador_Sintatico:
 '''
 
 analise = Analisador_Sintatico()
-analise.analise()
+# analise.analise()
 
 
 
