@@ -9,8 +9,6 @@ void main() {
     int resultado1 = (a + b) * (a - b);
     int resultado2 = a * (b / 2);
 
-    bool expressaoLogica = (a > b) && (c <= d);
-
     if ((a > b) && (c <= d) || (a < b)) {
         a = a - 2;
     } else {
@@ -22,7 +20,7 @@ void main() {
         i = 1 + a;
     }
 
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j = j + 1) {
         a = b + c;
     }
 }

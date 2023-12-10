@@ -8,35 +8,34 @@ class LexicalAnalyzer:
     BLANK_SPACE = 2
     UNKNOWN = 99
     
+    # Identifiers
     NUMERIC = 10
     IDENTIFIER = 11
     
-    # ASSIGN_OP = 20
-    # ADD_OP = 21
-    # SUB_OP = 22
-    # MULT_OP = 23
-    # DIV_OP = 24
-    # LEFT_PAREN = 25
-    # RIGHT_PAREN = 26
-    # LEFT_KEY = 27
-    # RIGHT_KEY = 28
-    # PONTO_VIRGULA = 29
-    # DOIS_PONTOS = 30
-    # SETA_ESQUERDA = 31
-    # SETA_DIREITA = 42
-    # TIPO_INTEIRO = 32
-    # TIPO_BOOLEAN = 33
-    # COND_IF = 34
-    # COND_ELSE = 35
-    # LOOP_WHILE = 36
-    # LOOP_FOR = 37
-    # PR_STD = 38
-    # PR_COUT = 39
-    # PR_ENDL = 40
-    # AND_OP = 41
+    # Tokens
+    ASSIGN_OP = 20
+    ADD_OP = 21
+    SUB_OP = 22
+    MULT_OP = 23
+    DIV_OP = 24
+    LEFT_PAREN = 25
+    RIGHT_PAREN = 26
+    LEFT_KEY = 27
+    RIGHT_KEY = 28
+    SEMICOLON = 29
+    COLON = 30
+    AND = 31
+    OR = 32
+    AND_OP = 33
+    OR_OP = 34
+    EQUAL = 35
+    GREATER = 36
+    GREATER_EQ = 37
+    LESS = 38
+    LESS_EQ = 39
+    DIFF_VALUE = 40
+    COMMA = 41
     
-    DOUBLE_AND = 70
-    DOUBLE_OR = 71
     MAIN_FUNCTION = 80
     IF_STMT = 81
     ELSE_STMT = 82
@@ -49,18 +48,41 @@ class LexicalAnalyzer:
     TYPE_CHAR = 95
     
     RESERVED_WORDS_AND_TOKENS = {
-        'void' : 91,
-        'main' : 80,
-        '&&' : 70,
-        '||' : 71,
-        'if' : 81,
-        'else' : 82,
-        'while' : 83,
-        'for' : 84,
-        'int' : 92,
-        'float' : 93,
-        'double' : 94,
-        'char' : 95,
+        'void': TYPE_VOID,
+        'main': MAIN_FUNCTION,
+        'if': IF_STMT,
+        'else': ELSE_STMT,
+        'while': WHILE_STMT,
+        'for': FOR_STMT,
+        'int': TYPE_INT,
+        'float': TYPE_FLOAT,
+        'double': TYPE_DOUBLE,
+        'char': TYPE_CHAR,
+    }
+    
+    LOOKUP = {
+        '=' : ASSIGN_OP,
+        '+' : ADD_OP,
+        '-' : SUB_OP,
+        '*' : MULT_OP,
+        '/' : DIV_OP,
+        '(' : LEFT_PAREN,
+        ')' : RIGHT_PAREN,
+        '{' : LEFT_KEY,
+        '}' : RIGHT_KEY,
+        ';' : SEMICOLON,
+        ':' : COLON,
+        '&' : AND,
+        '|' : OR,
+        '&&' : AND_OP,
+        '||' : OR_OP,
+        '=' : EQUAL,
+        '>' : GREATER,
+        '>=' : GREATER_EQ,
+        '<' : LESS,
+        '<=' : LESS_EQ,
+        '!=' : DIFF_VALUE,
+        ',' : COMMA
     }
     
     def __init__(self, filename):
@@ -102,7 +124,7 @@ class LexicalAnalyzer:
             
             if lexemeString in self.RESERVED_WORDS_AND_TOKENS:
                 if self.nextCharClass != 'EOF':
-                    if self.nextChar.isspace():
+                    if self.nextChar.isspace() or self.nextCharClass == LexicalAnalyzer.UNKNOWN:
                         self.parseTokenFromReservedWord(lexemeString)
                         return
                 else:
@@ -111,7 +133,7 @@ class LexicalAnalyzer:
                     return
             
             if self.nextCharClass != 'EOF':
-               if self.nextChar.isspace():
+               if self.nextChar.isspace() or self.nextCharClass == LexicalAnalyzer.UNKNOWN:
                    self.parseIdentifier(lexemeString)
                    return
             else:
@@ -128,7 +150,7 @@ class LexicalAnalyzer:
                 raise ValueError("Invalid identifier write: digits before alpha chars")
             
             if self.nextCharClass != 'EOF':
-                if self.nextChar.isspace():
+                if self.nextChar.isspace() or self.nextCharClass == LexicalAnalyzer.UNKNOWN:
                     self.parseInteger(lexemeString)
                     return
             else:
@@ -137,8 +159,8 @@ class LexicalAnalyzer:
                 return
             
         elif self.currentCharClass == LexicalAnalyzer.UNKNOWN:
+            self.lookup()
             return
-            # self.lookup()
         elif self.currentCharClass == LexicalAnalyzer.BLANK_SPACE:
             return
         else:
@@ -195,7 +217,7 @@ class LexicalAnalyzer:
         self.lexeme = []
     
     def gelAllIdentifierFromMixedString(self):
-        while self.nextCharClass != 'EOF' and self.nextChar != ' ':
+        while self.nextCharClass != 'EOF' and self.nextChar != ' ' and self.nextCharClass != LexicalAnalyzer.UNKNOWN:
             self.validateChar()
             self.validateNextChar()
             self.lexeme.append(self.currentChar)
@@ -212,6 +234,24 @@ class LexicalAnalyzer:
                     
 
     def lookup(self):
+        if self.currentChar in LexicalAnalyzer.LOOKUP:
+            if self.nextCharClass == LexicalAnalyzer.UNKNOWN:
+                possibleToken = self.currentChar + self.nextChar
+                if possibleToken in LexicalAnalyzer.LOOKUP: 
+                    self.tokens[len(self.tokens)] = {possibleToken : LexicalAnalyzer.LOOKUP[possibleToken]}
+                    self.lexeme = []
+                    self.validateChar()
+                    self.validateChar()
+                    self.validateNextChar()
+                else:
+                    self.tokens[len(self.tokens)] = {self.currentChar : LexicalAnalyzer.LOOKUP[self.currentChar]}
+                    self.lexeme = []
+            else:
+                self.tokens[len(self.tokens)] = {self.currentChar : LexicalAnalyzer.LOOKUP[self.currentChar]}
+                self.lexeme = []
+                if (self.nextCharClass == 'EOF'): 
+                    self.currentToken = 'EOF'
+        
         return
             
         
