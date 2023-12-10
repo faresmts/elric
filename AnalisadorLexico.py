@@ -6,6 +6,7 @@ DIGIT = 1
 UNKNOWN = 99
 
 # definição dos Códigos de tokens
+#ablublebiaoisdjasodui
 INT_LIT = 10
 IDENT = 11
 ASSIGN_OP = 20
