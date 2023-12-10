@@ -103,11 +103,8 @@ class LexicalAnalyzer:
         
         while self.currentToken != 'EOF':
             self.lexical()
-            
-        pprint(self.tokens)
     
         self.close_file()
-        
         
     def lexical(self):
         self.validateChar()
@@ -165,7 +162,6 @@ class LexicalAnalyzer:
             return
         else:
             raise ValueError("Some error occured")
-
         
     def validateChar(self):        
         char = self.file.read(1)
@@ -205,7 +201,6 @@ class LexicalAnalyzer:
                 self.nextCharClass = LexicalAnalyzer.BLANK_SPACE
             else:
                 self.nextCharClass = LexicalAnalyzer.UNKNOWN
-        
         self.file.seek(position)
     
     def parseTokenFromReservedWord(self, lexemeString):
@@ -215,7 +210,7 @@ class LexicalAnalyzer:
     def parseIdentifier(self, lexemeString):
         self.tokens[len(self.tokens)] = {lexemeString : LexicalAnalyzer.IDENTIFIER}
         self.lexeme = []
-    
+        
     def gelAllIdentifierFromMixedString(self):
         while self.nextCharClass != 'EOF' and self.nextChar != ' ' and self.nextCharClass != LexicalAnalyzer.UNKNOWN:
             self.validateChar()
@@ -232,7 +227,6 @@ class LexicalAnalyzer:
         self.tokens[len(self.tokens)] = {lexemeString : LexicalAnalyzer.NUMERIC}
         self.lexeme = []
                     
-
     def lookup(self):
         if self.currentChar in LexicalAnalyzer.LOOKUP:
             if self.nextCharClass == LexicalAnalyzer.UNKNOWN:
@@ -251,10 +245,8 @@ class LexicalAnalyzer:
                 self.lexeme = []
                 if (self.nextCharClass == 'EOF'): 
                     self.currentToken = 'EOF'
-        
         return
-            
-        
+               
     def open_file(self):
         try:
             self.file = open(self.filename, 'r')
